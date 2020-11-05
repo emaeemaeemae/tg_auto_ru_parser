@@ -2,11 +2,11 @@ import requests
 from bs4 import BeautifulSoup
 import csv
 
-
 HEADERS = {'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) '
                          'Chrome/79.0.3945.117 Safari/537.36', 'accept': '*/*'}
 
 
+# Сохранение списка авто в файл
 def save_file(cars, path):
     with open(path, 'w', newline='') as file:
         writer = csv.writer(file, delimiter=';')
@@ -121,7 +121,7 @@ def get_link(car):
     link = car.find('a').get('href')
     return link
 
-
+# Получение html страницы для дальнейшей работы
 def get_html(url, params=None):
     result = requests.get(url, headers=HEADERS, params=params)
     result.encoding = 'utf8'
@@ -130,7 +130,7 @@ def get_html(url, params=None):
 
 def get_data(html):
     soup = BeautifulSoup(html, 'lxml')
-    cars = soup.findAll('div', {'class': 'ListingItem-module__container'})
+    cars = soup.findAll('div', {'class': 'ListingItem-module__container'}) # список автомобилей
     car_list = []
     for car in cars:
         car_list.append({
@@ -153,20 +153,22 @@ def get_data(html):
     return car_list
 
 
+# Количество страниц с автомобилями
 def get_pages_count(html):
     soup = BeautifulSoup(html, 'lxml')
-    pagination = False  
+    pagination = False
     try:
-        panel = soup.find('span', class_='ListingPagination-module__pages')
-        pagination = panel.findAll('span', class_='Button__text')
+        panel = soup.find('span', class_='ListingPagination-module__pages') # блок с кнопками
+        pagination = panel.findAll('span', class_='Button__text') # поиск всех кнопок-ссылок
     except:
         pass
 
-    if pagination:
+    if pagination: # если блок есть, возвращаем последнюю ссылку
         return int(pagination[-1].text)
     else:
         return 1
 
+# Для работы вне Телеграма
 
 # def main(url):
 #     print('Введите адрес с сайта auto.ru')
